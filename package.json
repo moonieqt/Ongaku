@@ -10,8 +10,18 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@discordjs/opus": "^0.3.3",
+    "chalk": "^4.1.0",
+    "discord-starboards": "^2.1.4",
     "discord.js": "^12.5.1",
     "distube": "^2.8.8",
-    "node-json-db": "^1.1.0"
+    "ffmpeg-static": "^4.2.7",
+    "humanize-duration": "^3.25.1",
+    "jsoning": "^0.8.15",
+    "moment": "^2.29.1",
+    "moment-duration-format": "^2.3.2",
+    "node-fetch": "^2.6.1",
+    "node-json-db": "^1.1.0",
+    "quick.db": "^7.1.3"
   }
 }
