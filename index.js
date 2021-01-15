@@ -1898,16 +1898,14 @@ if(command === "shop") {
 
 
         //black jack commands
+        if(command === "userinfo") {
 
         if(args.length > 1) return message.channel.send('Only mention one user!');
-        
-    //check if there is no arguments
-    if(!args[0]) return message.channel.send('Mention someone!');
 
     //check if there is 1 argument
     if(args[0]){
       //get the first user mentioned
-      let member = message.mentions.members.first();
+      let member = message.mentions.members.first() || message.author;
 
       //if the member exists create an embed with info about that user and send it to the channel
       if(member) {
@@ -1916,13 +1914,13 @@ if(command === "shop") {
           .setTitle("User Info")
           .setThumbnail(member.user.displayAvatarURL())
           .setAuthor(`${member.user.tag} (${member.id})`, member.user.displayAvatarURL())
-          .addField("**Username:**", `${member.user.username}`, true)
-          .addField("**Discriminator:**", `${member.user.discriminator}`, true)
-          .addField("**ID:**", `${member.user.id}`, true)
-          .addField("**Status:**", `${member.user.presence.status}`, true)
-          .addField("**Joined On:**", `${member.joinedAt.toLocaleString()}`, true)
-          .addField("**Created On:**", `${member.user.createdAt.toLocaleString()}`, true)
-          .addField("**All Roles:**", `${member.roles.cache.map(role => role.toString()).join(' ')}`, true)
+          .addField("**Username:**", `${member.user.username}`)
+          .addField("**Discriminator:**", `${member.user.discriminator}`)
+          .addField("**ID:**", `${member.user.id}`)
+          .addField("**Status:**", `${member.user.presence.status}`)
+          .addField("**Joined On:**", `${member.joinedAt.toLocaleString()}`)
+          .addField("**Created On:**", `${member.user.createdAt.toLocaleString()}`)
+          .addField("**All Roles:**", `${member.roles.cache.map(role => role.toString()).join(' ')}`)
           .setFooter(`© ${message.guild.me.displayName}`, client.user.displayAvatarURL());
 
         message.channel.send(embed);
@@ -1930,6 +1928,7 @@ if(command === "shop") {
           message.channel.send(`Could not find that member`); //send a message to the channel if the user doesn't exist
       }
     }
+        }
 
     if(command === "serverinfo") {
          let embed = new Ongaku.MessageEmbed()
@@ -1937,15 +1936,15 @@ if(command === "shop") {
       .setTitle("Server Info")
       .setThumbnail(message.guild.iconURL())
       .setAuthor(`${message.guild.name}`, message.guild.iconURL())
-      .addField("**Guild Owner:**", `${message.guild.owner}`, true)
-      .addField("**Member Count:**", `${message.guild.memberCount}`, true)
-      .addField("**Total Real Members**", message.guild.members.cache.filter(member => !member.user.bot).size, true)
-      .addField("**Total Bots**", message.guild.members.cache.filter(member => member.user.bot).size, true)
-      .addField("**Total Channels**", message.guild.channels.cache.size, true)
-      .addField("**Total Text Channels**", message.guild.channels.cache.filter(ch => ch.type === 'text').size, true)
-      .addField("**Total Voice Channels**", message.guild.channels.cache.filter(ch => ch.type === 'voice').size, true)
-      .addField("**Created On**", message.guild.createdAt.toLocaleString(), true)
-      .addField("**All roles**", `${message.guild.roles.cache.map(role => role.toString()).join(' ')}`, true)
+      .addField("**Guild Owner:**", `${message.guild.owner}`)
+      .addField("**Member Count:**", `${message.guild.memberCount}`)
+      .addField("**Total Real Members**", message.guild.members.cache.filter(member => !member.user.bot).size)
+      .addField("**Total Bots**", message.guild.members.cache.filter(member => member.user.bot).size)
+      .addField("**Total Channels**", message.guild.channels.cache.size)
+      .addField("**Total Text Channels**", message.guild.channels.cache.filter(ch => ch.type === 'text').size)
+      .addField("**Total Voice Channels**", message.guild.channels.cache.filter(ch => ch.type === 'voice').size)
+      .addField("**Created On**", message.guild.createdAt.toLocaleString())
+      .addField("**All roles**", `${message.guild.roles.cache.map(role => role.toString()).join(' ')}`)
       .setFooter(`© ${message.guild.me.displayName}`, client.user.displayAvatarURL());
     
     message.channel.send(embed);
