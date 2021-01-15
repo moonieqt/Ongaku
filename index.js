@@ -12,6 +12,8 @@ const moment = require('moment');
 require("moment-duration-format");
 const cooldowns = new Map();
 const humanizeDuration = require('humanize-duration');
+const superagent = require('superagent');
+
 
 const StarboardsManager = require('discord-starboards');
 
@@ -912,6 +914,10 @@ if(command === "snipe") {
 
         message.channel.send(embed)
 }
+
+//end of snipe
+
+
  if(command === "hug") {
           if (!message.mentions.users.first()) return message.reply("You need to mention someone to hug them"); //if no one is mentions , lets reply as
     const { body } = await superagent
