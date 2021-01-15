@@ -14,6 +14,8 @@ const cooldowns = new Map();
 const humanizeDuration = require('humanize-duration');
 const superagent = require('superagent');
 
+require('http').createServer((req, res) => res.end()).listen(5030)
+
 
 const StarboardsManager = require('discord-starboards');
 
@@ -149,7 +151,7 @@ client.on("message", async message => {
     
     if(message.author.bot) return;
 const data = {
-    prefix: "on!"
+    prefix: "o!"
 }
 
 let prefix = data.prefix
@@ -346,8 +348,9 @@ if(message.member.roles.cache.has(whitelist)) return;
                 description: `  Failed to remove warning... Double check the user and warning number. (e.x: ${prefix}unwarn [warn number] @user)`
             }});
         });
-    }
-    if(command === "warnings") {
+     }
+     
+  if(command === "warnings") {
         var userid = (message.mentions.members.first()) || message.author;
         var page = (args[2]) ? args[2] : "1";
         if (!isNaN(page)) {
@@ -355,19 +358,20 @@ if(message.member.roles.cache.has(whitelist)) return;
             database.getWarnings(message.guild.id, userid)
             .then(warnings => {
                 if (warnings.length == 0) return message.channel.send("", { embed: {
-                    color: `RANDOM`,
+                    color: `#ff3636`,
                     description: "<:RosesNo:783481473176436768> | User has no warnings."
                 }});
                 var array_chunks = Array(Math.ceil(warnings.length / 15)).fill().map((_, index) => index * 15).map(begin => warnings.slice(begin, begin + 15));
                 if (page > -1 && array_chunks.length > page) {
                     message.channel.send({ embed: {
-                        color: `RANDOM`,
-                        description:` <:RosesYes:783481474337865729> Warnings for <@${userid.id}>  (${userid.id})\n\n Total warnings:  ${warnings.length} | Page: ${page + 1}/${array_chunks.length}\n\n${array_chunks[page].map((warning, index) => `${index + 1})‎ Timestamp: ${warning.d}‎ | Moderator: <@${warning.issuer}>\n *Reason for the warning: ${warning.reason}*`).join("\n\n")}`
-                    }});
+                        color: `#ff3636`,
+                        description:` **<:RosesYes:783481474337865729> Warnings for <@${userid.id}>  (${userid.id})**\n\n Total warnings:  ${warnings.length} | Page: ${page + 1}/${array_chunks.length}\n\n${array_chunks[page].map((warning, index) => `${index + 1})‎ Timestamp: ${warning.d}‎ | Moderator: <@${warning.issuer}>\n *Reason for the warning: ${warning.reason}*`).join("\n\n")}`
+                    }})
                 }
-            });
+            })
         }
          }
+        
          if (command === "unban") {
     const rgx = /^(?:<@!?)?(\d+)>?$/;
     if (!message.member.hasPermission("ADMINISTRATOR", "BAN_MEMBERS")) return message.channel.send("You need to be an admin to use this command.");
@@ -1865,14 +1869,16 @@ if(command === "shop") {
  //end of economy
 
  if (command === 'starboard') {
-        client.starboardsManager.create(message.channel, {
+     let chan = message.mentions.channels.first()
+     if(!chan) return message.channel.send('no channel found')
+        client.starboardsManager.create(chan, {
             emoji: "⭐",
             color: "RANDOM",
             starBotMsg: false,
             selfStar: false,
             threshold: 3
         });
-        message.channel.send(`${message.channel} is the new starboard channel!`);
+        message.channel.send(`${chan} is the new starboard channel!`);
     }
 
     if (command === 'leaderboard') {
@@ -1890,101 +1896,61 @@ if(command === "shop") {
 
     //end of starboard stuff
 
-    if(command === "blackjack") {
-        let msg = message;
-        var draw1;
-var draw2;
-var players = [];
-var credits = [];
-var cardNums = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"];
-var royals = ["Jack", "Queen", "King"];
-var card3 = Math.floor(Math.random() * 13);
-var game = false;
-var total = 0;
-var c3f = ["10", "Jack", "Queen", "King"];
- 
-  msg.channel.send("Starting new game");
-            if (!players.includes(msg.author.id)) {
-                console.log("adding new user! " + msg.author.id);
-                players.push(msg.author.id);
-                credits.push(200);
-            }
-            credits[players.indexOf(msg.author.id)] -= 50;
-            draw1 = Math.floor(Math.random() * 13);
-            draw2 = Math.floor(Math.random() * 13);
-            if (draw1 > 10) {}
-            console.log("New Game by " + msg.author.id);
-            console.log(draw1);
-            console.log(draw2);
-            game = true;
-            total = 0;
-            msg.channel.send("--Commands--");
-            msg.channel.send("${prefix}hit - draws new card to add to total");
-            msg.channel.send("${pefix}stay - keeps current cards for final amount");
-
-            if (draw1 > 9 && draw2 > 9) {
-                if (draw2 = 10) {
-                    total = 1 + draw1 + draw2;
-                } else if (draw = 11) {
-                    total = draw1 + draw2;
-                } else {
-                    total = draw1 + draw2 - 1;
-                }
-                if (draw2 = 10) {
-                    total += 1;
-                } else {
-                    total -= 1;
-                }
-                msg.channel.send("You pulled a " + royals[(draw2) - 10] + " and a " + royals[(draw1) - 10] + " for a total of 20");
-
-            } else if (draw1 > 9) {
-                if (draw1 = 10) {
-                    total = 1 + draw1 + draw2;
-                } else if (draw1 = 11) {
-                    total = draw1 + draw2;
-                } else {
-                    total = draw1 + draw2 - 1
-                }
-                msg.channel.send("You pulled a " + cardNums[draw2] + " and a " + royals[(draw1) - 10] + " for a total of " + total);
-
-            } else if (draw2 > 9) {
-                if (draw2 = 10) {
-                    total = 1 + draw1 + draw2;
-                } else if (draw2 = 11) {
-                    total = draw1 + draw2;
-                } else {
-                    total = draw1 + draw2 - 1
-                }
-                msg.channel.send("You pulled a " + royals[(draw2) - 10] + " and a " + cardNums[draw1] + " for a total of " + total);
-
-            } else {
-                total = 2 + draw1 + draw2;
-                msg.channel.send("You pulled a " + cardNums[draw2] + " and a " + cardNums[draw1] + " for a total of " + total);
-            }
-        } else {
-            msg.channel.send("There is already a game in progress!");
-        }
-        if(command === "stay") {
-            let msg = message;
-             var dealerTotal = Math.floor(Math.random() * 6) + 17;
-            msg.channel.send("You stood at a final total of " + total);
-            msg.channel.send("The dealer stood with a total of " + dealerTotal);
-            if (total <= dealerTotal && dealerTotal <= 21) {
-                msg.channel.send("You Lose");
-            } else {
-                msg.channel.send("You Win!");
-                credits[players.indexOf(msg.author.id)] += 100;
-            }
-            game = false;
-            msg.channel.send("You now have " + credits[players.indexOf(msg.author.id)] + " credits");
-        }
-        if(command === "hit") {
-            let msg = message;
-            msg.channel.send("You currently have " + credits[players.indexOf(msg.author.id)] + "credits!");
-        } else {
-            msg.channel.send("You have not setup an account, use ?blackjack to start a game and setup your account!");
-        }
 
         //black jack commands
+
+        if(args.length > 1) return message.channel.send('Only mention one user!');
+        
+    //check if there is no arguments
+    if(!args[0]) return message.channel.send('Mention someone!');
+
+    //check if there is 1 argument
+    if(args[0]){
+      //get the first user mentioned
+      let member = message.mentions.members.first();
+
+      //if the member exists create an embed with info about that user and send it to the channel
+      if(member) {
+        let embed = new Ongaku.MessageEmbed()
+          .setColor("RANDOM")
+          .setTitle("User Info")
+          .setThumbnail(member.user.displayAvatarURL())
+          .setAuthor(`${member.user.tag} (${member.id})`, member.user.displayAvatarURL())
+          .addField("**Username:**", `${member.user.username}`, true)
+          .addField("**Discriminator:**", `${member.user.discriminator}`, true)
+          .addField("**ID:**", `${member.user.id}`, true)
+          .addField("**Status:**", `${member.user.presence.status}`, true)
+          .addField("**Joined On:**", `${member.joinedAt.toLocaleString()}`, true)
+          .addField("**Created On:**", `${member.user.createdAt.toLocaleString()}`, true)
+          .addField("**All Roles:**", `${member.roles.cache.map(role => role.toString()).join(' ')}`, true)
+          .setFooter(`© ${message.guild.me.displayName}`, client.user.displayAvatarURL());
+
+        message.channel.send(embed);
+      } else {
+          message.channel.send(`Could not find that member`); //send a message to the channel if the user doesn't exist
+      }
+    }
+
+    if(command === "serverinfo") {
+         let embed = new Ongaku.MessageEmbed()
+      .setColor("RANDOM")
+      .setTitle("Server Info")
+      .setThumbnail(message.guild.iconURL())
+      .setAuthor(`${message.guild.name}`, message.guild.iconURL())
+      .addField("**Guild Owner:**", `${message.guild.owner}`, true)
+      .addField("**Member Count:**", `${message.guild.memberCount}`, true)
+      .addField("**Total Real Members**", message.guild.members.cache.filter(member => !member.user.bot).size, true)
+      .addField("**Total Bots**", message.guild.members.cache.filter(member => member.user.bot).size, true)
+      .addField("**Total Channels**", message.guild.channels.cache.size, true)
+      .addField("**Total Text Channels**", message.guild.channels.cache.filter(ch => ch.type === 'text').size, true)
+      .addField("**Total Voice Channels**", message.guild.channels.cache.filter(ch => ch.type === 'voice').size, true)
+      .addField("**Created On**", message.guild.createdAt.toLocaleString(), true)
+      .addField("**All roles**", `${message.guild.roles.cache.map(role => role.toString()).join(' ')}`, true)
+      .setFooter(`© ${message.guild.me.displayName}`, client.user.displayAvatarURL());
+    
+    message.channel.send(embed);
+    }
+
+    //end of info commmands
 }); 
 client.login(main.token)
