@@ -2,12 +2,10 @@ const Ongaku = require('discord.js');
 const client = new Ongaku.Client();
 const DisTube = require('distube')
 const distube = new DisTube(client, { searchSongs: true }, { leaveOnEmpty: true}, { emitNewSongOnly: true});
-const data = {
-    token: 'Nzk4NjcwNjcyOTY4Mjg2MjA5.X_4aBw.9Ne2pA5iGUVlKM904ysjaWX6P7E',
-    prefix: 'on!'
-}
-const Database = require("./db");
+const Database = require("./data/db");
 const database = new Database();
+client.muted = require("./data/muted.json");
+const main = require("./data/main.json")
 
 const status = (queue) => `*Music Volume: \`${queue.volume}%\` - Filters: \`${queue.filter || "Off"}\` - Looping: \`${queue.repeatMode ? queue.repeatMode == 2 ? "All Queue" : "This Song" : "Off"}\` - Autoplaying: \`${queue.autoplay ? "On" : "Off"}\`*`;
 
@@ -92,8 +90,8 @@ client.user.setActivity("your playlist!", {
   url: "https://www.twitch.tv/wowitsmoon",
   status: "dnd"
 });
-  console.log(`Prefix is: ${data.prefix}`)
+  console.log(`Prefix is: ${main.prefix}`)
   console.log(`Name is: ${client.user.username}`)
-
-  statcord.autopost();
 });
+
+client.login(main.token)
