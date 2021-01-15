@@ -1898,6 +1898,7 @@ if(command === "shop") {
 
 
         //black jack commands
+        if(commmand === "userinfo") {
 
         if(args.length > 1) return message.channel.send('Only mention one user!');
         
@@ -1930,6 +1931,7 @@ if(command === "shop") {
           message.channel.send(`Could not find that member`); //send a message to the channel if the user doesn't exist
       }
     }
+        }
 
     if(command === "serverinfo") {
          let embed = new Ongaku.MessageEmbed()
