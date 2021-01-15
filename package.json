@@ -1,0 +1,17 @@
+{
+  "name": " Ongaku",
+  "version": "6.3.2",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^12.5.1",
+    "distube": "^2.8.8",
+    "node-json-db": "^1.1.0"
+  }
+}
