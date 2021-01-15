@@ -1901,14 +1901,11 @@ if(command === "shop") {
         if(command === "userinfo") {
 
         if(args.length > 1) return message.channel.send('Only mention one user!');
-        
-    //check if there is no arguments
-    if(!args[0]) return message.channel.send('Mention someone!');
 
     //check if there is 1 argument
     if(args[0]){
       //get the first user mentioned
-      let member = message.mentions.members.first();
+      let member = message.mentions.members.first() || message.author;
 
       //if the member exists create an embed with info about that user and send it to the channel
       if(member) {
