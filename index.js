@@ -5,7 +5,7 @@ const distube = new DisTube(client, { searchSongs: true }, { leaveOnEmpty: true}
 const Database = require("./data/db");
 const database = new Database();
 client.muted = require("./data/muted.json");
-const main = require("./data/main.json")
+const main = require("./data/config.json")
 
 const status = (queue) => `*Music Volume: \`${queue.volume}%\` - Filters: \`${queue.filter || "Off"}\` - Looping: \`${queue.repeatMode ? queue.repeatMode == 2 ? "All Queue" : "This Song" : "Off"}\` - Autoplaying: \`${queue.autoplay ? "On" : "Off"}\`*`;
 
