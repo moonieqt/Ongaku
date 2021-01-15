@@ -1946,7 +1946,7 @@ if(command === "shop") {
       .addField("**Total Channels**", message.guild.channels.cache.size)
       .addField("**Total Text Channels**", message.guild.channels.cache.filter(ch => ch.type === 'text').size)
       .addField("**Total Voice Channels**", message.guild.channels.cache.filter(ch => ch.type === 'voice').size)
-      .addField("**Created On**", message.guild.createdAt.toLocaleSize)
+      .addField("**Created On**", message.guild.createdAt.toLocaleString)
       .addField("**All roles**", `${message.guild.roles.cache.map(role => role.toString()).join(' ')}`)
       .setFooter(`© ${message.guild.me.displayName}`, client.user.displayAvatarURL());
     
