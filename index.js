@@ -1898,7 +1898,7 @@ if(command === "shop") {
 
 
         //black jack commands
-        if(commmand === "userinfo") {
+        if(command === "userinfo") {
 
         if(args.length > 1) return message.channel.send('Only mention one user!');
         
