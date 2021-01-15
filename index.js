@@ -921,29 +921,29 @@ if(command === "snipe") {
  if(command === "hug") {
           if (!message.mentions.users.first()) return message.reply("You need to mention someone to hug them"); //if no one is mentions , lets reply as
     const { body } = await superagent
-    .get("https://neko-love.xyz/api/v1/hug"); //lets see wut we went
+    .get("https://nekos.life/api/hug"); //lets see wut we went
     
     const embed = new Ongaku.MessageEmbed() //onec Discordjs is updated to 12.2.0 , richembed is removed ! they replaced now as MessageEmbed
     .setColor("RANDOM") // you can set it as you went
-    .setDescription(`UwU, ${message.author} hugged ${message.mentions.users.first()}`) // lets reply like this if we mentions
+    .setDescription(`${message.author} hugged ${message.mentions.users.first()}`) // lets reply like this if we mentions
     .setImage(body.url) // hug gif well showing here
     message.channel.send({embed})
   }
   if(command === "kiss") {
       if (!message.mentions.users.first()) return message.reply("You need to mention someone to kiss them");
     const { body } = await superagent
-    .get("https://neko-love.xyz/api/v1/kiss");
+    .get("https://nekos.life/api/kiss");
     
     const embed = new Ongaku.MessageEmbed() //RichEmbed is changed to MessageEmbed because the newest update is remove `RichEmbed` Method
     .setColor("RANDOM") // you can set it random color
-    .setDescription(`OwO, ${message.author} kissed ${message.mentions.users.first()}`) 
+    .setDescription(` ${message.author} kissed ${message.mentions.users.first()}`) 
     .setImage(body.url)
     message.channel.send({embed})
   }
   if(command === "pet") {
       if (!message.mentions.users.first()) return message.reply("you almost mention someone to pet them");
     const { body } = await superagent
-    .get("https://neko-love.xyz/api/v1/pat");
+    .get("https://nekos.life/api/pat");
     
     const embed = new Ongaku.MessageEmbed() 
     .setColor("RANDOM") //you can set it as you went
@@ -955,7 +955,7 @@ if(command === "snipe") {
       if (!message.mentions.users.first()) return message.reply(":x: | i see anything is wrong ,You need to mention someone to pat them"); //lets reply as this if you didnt mention anyone
     if (message.mentions.users.first().id === "782929865636446229") return message.channel.send('<a:kith:790731483576139777>'); //lets reply as this if you mentions
     const { body } = await superagent
-    .get("https://nekos.life/api/v2/img/poke"); //lets check wut we need
+    .get("https://nekos.life/api/poke"); //lets check wut we need
     
     const embed = new Ongaku.MessageEmbed() // RichEmbed is renamed as MessageEmbed onec discordjs is updated to newest version
     .setColor("RANDOM") 
@@ -966,7 +966,7 @@ if(command === "snipe") {
   if(command === "slap") {
        if (!message.mentions.users.first()) return message.reply("You need to mention someone to slap them"); //if no one is mentions , lets reply as
     const { body } = await superagent
-    .get("https://neko-love.xyz/api/v1/slap"); //wut we need 
+    .get("https://nekos.life/api/slap"); //wut we need 
     
     const embed = new Ongaku.MessageEmbed() //once discordjs is updated to 12.2.0 , richembed is removed , they replaced as MessageEmbed Method
     .setColor("RANDOM") // you can set it as you went
