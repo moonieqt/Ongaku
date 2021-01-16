@@ -35,19 +35,7 @@ const manager = new StarboardsManager(client, {
 client.starboardsManager = manager;
 
 
-const Enmap = require('enmap');
-client.settings = new Enmap({
-  name: "settings",
-  fetchAll: false,
-  autoFetch: true,
-  cloneLevel: 'deep'
-});
 
-// Just setting up a default configuration object here, to have something to insert.
-const defaultSettings = {
-  prefix: "o!",
-  modlog: "ongaku-log"
-}
 
 
 //npm above
@@ -164,15 +152,19 @@ const DIFF = 9500;
 
 
 client.on("message", async message => {
-    client.settings.ensure(message.guild.id, defaultSettings);
 
     const Modlog = message.guild.channels.cache
-    .get(message.guild.id, "modlog")
+    .get("ongaku-logs")
     
     if(message.author.bot) return;
-const data = client.settings.ensure(message.guild.id, defaultSettings);
+
+const data = {
+    prefix: "o!"
+}
 
 let prefix = data.prefix
+
+
     var nonos = [
     'fuck','pussy','bitch','hoe','whore','slut','cunt','piss','shit','damn','nigga','nigger','retard','dickhead','dipshit','ass','asshat','motherfucker','bitchass','bitch ass','Fuck','Pussy','Bitch','Hoe','Whore','Slut','Cunt','Piss','Shit','Damn','Nigga','Nigger','Retard','Dickhead','Dipshit','Ass','Asshat','Motherfucker','Bitchass','bitch ass'
 ]
@@ -376,13 +368,13 @@ if(message.member.roles.cache.has(whitelist)) return;
             database.getWarnings(message.guild.id, userid)
             .then(warnings => {
                 if (warnings.length == 0) return message.channel.send("", { embed: {
-                    color: `#ff3636`,
+                    color: `RANDOM`,
                     description: "User has no warnings."
                 }});
                 var array_chunks = Array(Math.ceil(warnings.length / 15)).fill().map((_, index) => index * 15).map(begin => warnings.slice(begin, begin + 15));
                 if (page > -1 && array_chunks.length > page) {
                     message.channel.send({ embed: {
-                        color: `#ff3636`,
+                        color: `RANDOM`,
                         description:` ** Warnings for <@${userid.id}>  (${userid.id})**\n\n Total warnings:  ${warnings.length} | Page: ${page + 1}/${array_chunks.length}\n\n${array_chunks[page].map((warning, index) => `${index + 1})‎ Timestamp: ${warning.d}‎ | Moderator: <@${warning.issuer}>\n *Reason for the warning: ${warning.reason}*`).join("\n\n")}`
                     }})
                 }
@@ -1993,6 +1985,31 @@ if(command === "shop") {
 		})
 		.catch(console.error);
     }
+
+    //end of meme command
+    if (command === "avatar") {
+
+    let member = message.mentions.users.first() || message.author;
+    message.channel.send(new Ongaku.MessageEmbed()
+    .setColor("RANDOM")
+    .setTitle(`${member.username}'s' Avatar`)
+      .setImage(member.displayAvatarURL({ dynamic: true, size: 512 })))
+  }
+
+
+  
+
+  // end of all commands (adding more in the future)
+
+  if(command === "help") {
+
+      let embed = new Ongaku.MessageEmbed()
+      .setAuthor(message.author.username, message.author.displayAvatarURL())
+      .setDescription(`\`Help command interface\``)
+
+      message.channel.send(embed)
+     
+  }
 
 
 }); 
