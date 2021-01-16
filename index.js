@@ -138,7 +138,7 @@ client.on('messageDelete', async (message) => {
         }
     }, 5000);
 
-client.user.setActivity("over you! | o!", {
+client.user.setActivity("over you | o!", {
   type: "WATCHING",
   status: "dnd"
 });
