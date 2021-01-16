@@ -13,7 +13,7 @@ node .
 
 ## Command example
 
-![ongaku](src/data/images/logo.png)
+![ongaku](src/config/images/logo.png)
 
 ## Requirements
 
