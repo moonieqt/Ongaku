@@ -2,10 +2,10 @@ const Ongaku = require('discord.js');
 const client = new Ongaku.Client();
 const DisTube = require('distube')
 const distube = new DisTube(client, { searchSongs: true }, { leaveOnEmpty: true}, { emitNewSongOnly: true});
-const Database = require("./src/data/db");
+const Database = require("./src/config/db");
 const database = new Database();
-client.muted = require("./src/data/muted.json");
-const main = require("./src/data/config.json")
+client.muted = require("./src/config/muted.json");
+const main = require("./src/config/config.json")
 const fs = require('fs');
 const db = require('quick.db');
 const moment = require('moment');
@@ -14,6 +14,8 @@ const cooldowns = new Map();
 const humanizeDuration = require('humanize-duration');
 const superagent = require('superagent');
 
+const got = require('got');
+
 require('http').createServer((req, res) => res.end()).listen(5030)
 
 
@@ -21,7 +23,7 @@ const StarboardsManager = require('discord-starboards');
 
 // Initialise it
 const manager = new StarboardsManager(client, {
-    storage: './src/data/mdsc/starboards.json',
+    storage: './src/config/mdsc/starboards.json',
     messages: {
         selfstar: 'You cannot star your own messages.',
         starbot: 'You cannot star messages from a bot.',
@@ -31,6 +33,22 @@ const manager = new StarboardsManager(client, {
 
 // We now have a starboardsManager property to access the manager everywhere!
 client.starboardsManager = manager;
+
+
+const Enmap = require('enmap');
+client.settings = new Enmap({
+  name: "settings",
+  fetchAll: false,
+  autoFetch: true,
+  cloneLevel: 'deep'
+});
+
+// Just setting up a default configuration object here, to have something to insert.
+const defaultSettings = {
+  prefix: "o!",
+  modlog: "ongaku-log"
+}
+
 
 //npm above
 
@@ -113,16 +131,16 @@ client.on('messageDelete', async (message) => {
                 member.removeRole(mutedRole);
                 delete client.muted[i];
 
-                fs.writeFile("./src/data/muted.json", JSON.stringify(client.muted), err => {
+                fs.writeFile("./src/config/muted.json", JSON.stringify(client.muted), err => {
                     if(err) throw err;
                 });
             }
         }
     }, 5000);
 
-client.user.setActivity("your playlist!", {
-  type: "STREAMING",
-  url: "https://www.twitch.tv/wowitsmoon"
+client.user.setActivity("over you! | o!", {
+  type: "WATCHING",
+  status: "dnd"
 });
 
 
@@ -131,7 +149,7 @@ client.user.setActivity("your playlist!", {
 
 
 
-
+// bot categorys: [ music, mod, fun, eco ]
 
 
 const usersMap = new Map();
@@ -146,13 +164,13 @@ const DIFF = 9500;
 
 
 client.on("message", async message => {
+    client.settings.ensure(message.guild.id, defaultSettings);
 
-    const Modlog = message.guild.channels.cache.get("ongaku-logs")
+    const Modlog = message.guild.channels.cache
+    .get(message.guild.id, "modlog")
     
     if(message.author.bot) return;
-const data = {
-    prefix: "o!"
-}
+const data = client.settings.ensure(message.guild.id, defaultSettings);
 
 let prefix = data.prefix
     var nonos = [
@@ -359,13 +377,13 @@ if(message.member.roles.cache.has(whitelist)) return;
             .then(warnings => {
                 if (warnings.length == 0) return message.channel.send("", { embed: {
                     color: `#ff3636`,
-                    description: "<:RosesNo:783481473176436768> | User has no warnings."
+                    description: "User has no warnings."
                 }});
                 var array_chunks = Array(Math.ceil(warnings.length / 15)).fill().map((_, index) => index * 15).map(begin => warnings.slice(begin, begin + 15));
                 if (page > -1 && array_chunks.length > page) {
                     message.channel.send({ embed: {
                         color: `#ff3636`,
-                        description:` **<:RosesYes:783481474337865729> Warnings for <@${userid.id}>  (${userid.id})**\n\n Total warnings:  ${warnings.length} | Page: ${page + 1}/${array_chunks.length}\n\n${array_chunks[page].map((warning, index) => `${index + 1})‎ Timestamp: ${warning.d}‎ | Moderator: <@${warning.issuer}>\n *Reason for the warning: ${warning.reason}*`).join("\n\n")}`
+                        description:` ** Warnings for <@${userid.id}>  (${userid.id})**\n\n Total warnings:  ${warnings.length} | Page: ${page + 1}/${array_chunks.length}\n\n${array_chunks[page].map((warning, index) => `${index + 1})‎ Timestamp: ${warning.d}‎ | Moderator: <@${warning.issuer}>\n *Reason for the warning: ${warning.reason}*`).join("\n\n")}`
                     }})
                 }
             })
@@ -500,9 +518,6 @@ if(command === "removerole") {
         await target.roles.remove(role) // removeing the role to the user
         message.channel.send(`${target.user.username} roles has been removed from ${role}`)
 }
-if(command === "setup") {
-    if(!Modlog) message.guild.channels.create('ongaku-logs')
-}
 if(command === "mute") {
     if(!message.member.hasPermission("MANAGE_MESSAGES")) return message.channel.send("You do not have Permission to mute!");
     let toMute = message.mentions.members.first() || message.guild.members.cache.get(args[0]);
@@ -559,7 +574,7 @@ if(command === "mute") {
     
     
 
-    fs.writeFile("./src/data/muted.json", JSON.stringify(client.muted, null, 4), err => {
+    fs.writeFile("./src/config/muted.json", JSON.stringify(client.muted, null, 4), err => {
         if(err) throw err;
 
         message.channel.send(new Ongaku.MessageEmbed()
@@ -587,7 +602,7 @@ if(command === "mute") {
     toMute.roles.remove(mutedRole);
     delete client.muted[toMute.id];
 
-    fs.writeFile("./src/data/muted.json", JSON.stringify(client.muted), err => {
+    fs.writeFile("./src/config/muted.json", JSON.stringify(client.muted), err => {
         if(err) throw err;
         message.channel.send(new Ongaku.MessageEmbed()
     .setColor("RANDOM")
@@ -598,6 +613,7 @@ if(command === "mute") {
   }
 
 //end of moderation commands
+
 if(command === "eval") {
 const { runInNewContext } = require("vm");
 const chalk = require("chalk");
@@ -908,7 +924,7 @@ if(command === "snipe") {
      let msg = db.get(`snipemsg_${message.channel.id}_${message.guild.id}`)
         let senderid = db.get(`snipesender_${message.channel.id}_${message.guild.id}`)
         if(!msg) {
-            return message.channel.send(`There is nothing to snipe. BOOMER`)
+            return message.channel.send(`There is nothing to snipe.`)
         }
         let embed = new Ongaku.MessageEmbed()
         .setTitle(client.users.cache.get(senderid).username, client.users.cache.get(senderid).displayAvatarURL({ format: "png", dynamic: true }))
@@ -1868,8 +1884,9 @@ if(command === "shop") {
 
  //end of economy
 
- if (command === 'starboard') {
-     let chan = message.mentions.channels.first()
+ if(command === 'starboard') {
+     let chan = message.mentions.channels.first();
+
      if(!chan) return message.channel.send('no channel found')
         client.starboardsManager.create(chan, {
             emoji: "⭐",
@@ -1878,7 +1895,7 @@ if(command === "shop") {
             selfStar: false,
             threshold: 3
         });
-        message.channel.send(`${chan} is the new starboard channel!`);
+        message.channel.send(`${chan} is now activated!!`);
     }
 
     if (command === 'leaderboard') {
@@ -1951,5 +1968,32 @@ if(command === "shop") {
     }
 
     //end of info commmands
+
+    if(command === "meme") {
+        const embed = new Ongaku.MessageEmbed();
+	got('https://www.reddit.com/r/memes/random/.json')
+		.then(response => {
+			const [list] = JSON.parse(response.body);
+			const [post] = list.data.children;
+
+			const permalink = post.data.permalink;
+			const memeUrl = `https://reddit.com${permalink}`;
+			const memeImage = post.data.url;
+			const memeTitle = post.data.title;
+			const memeUpvotes = post.data.ups;
+			const memeNumComments = post.data.num_comments;
+
+			embed.setTitle(`${memeTitle}`);
+			embed.setURL(`${memeUrl}`);
+			embed.setColor('RANDOM');
+			embed.setImage(memeImage);
+			embed.setFooter(`👍 ${memeUpvotes} 💬 ${memeNumComments}`);
+
+			message.channel.send(embed);
+		})
+		.catch(console.error);
+    }
+
+
 }); 
 client.login(main.token)
