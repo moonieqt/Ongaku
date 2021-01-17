@@ -36,19 +36,34 @@ client.starboardsManager = manager;
 
 
 const Enmap = require('enmap');
-client.settings = new Enmap({
-  name: "settings",
+
+
+client.modmail = new Enmap({
+  name: "modmail",
   fetchAll: false,
   autoFetch: true,
   cloneLevel: 'deep'
 });
-
 // Just setting up a default configuration object here, to have something to insert.
-const defaultSettings = {
-  prefix: "o!",
-  modlog: "ongaku-log"
+
+let role = db.get('support')
+if(!role) role = 'None';
+
+const settings = {
+  support: `${role}`,
+  message: 'Hello and welcome to your support ticket\n\n you can get started by asking your question so when they arrive they can help you ASAP!'
 }
 
+
+client.prefix = new Enmap({
+  name: "prefixes",
+  fetchAll: false,
+  autoFetch: true,
+  cloneLevel: 'deep'
+});
+const configs = {
+  prefix: "o!"
+}
 
 //npm above
 
@@ -159,20 +174,52 @@ const TIME = 25000;
 const DIFF = 9500;
 
 
+client.on("channelDelete", (channel) => {
+    
+    if(channel.parentID == channel.guild.channels.cache.find((x) => x.name == "Ongaku-ModMail").id) {
+        const person = channel.guild.members.cache.find((x) => x.id == channel.name)
+
+        if(!person) return;
+
+        let yembed = new Ongaku.MessageEmbed()
+        .setAuthor("MAIL DELETED", client.user.displayAvatarURL())
+        .setColor('RANDOM')
+        .setThumbnail(client.user.displayAvatarURL())
+        .setDescription("Your mail is deleted by moderator and if you have any problem with that than you can open mail again by sending message here.")
+    return person.send(yembed)
+    
+    }
+
+
+});
+
+client.on("guildDelete", guild => {
+  // When the bot leaves or is kicked, delete settings to prevent stale entries.
+  client.modmail.delete(guild.id);
+  client.prefix.delete(guild.id);
+});
 
 
 
 
 client.on("message", async message => {
-    client.settings.ensure(message.guild.id, defaultSettings);
+    
+
+const mail = client.modmail.ensure(message.guild.id, settings)
+const con = client.prefix.ensure(message.guild.id, configs)
 
     const Modlog = message.guild.channels.cache
-    .get(message.guild.id, "modlog")
+    .get("ongaku-logs")
     
     if(message.author.bot) return;
-const data = client.settings.ensure(message.guild.id, defaultSettings);
+
+const data = {
+    prefix: con.prefix
+}
 
 let prefix = data.prefix
+
+
     var nonos = [
     'fuck','pussy','bitch','hoe','whore','slut','cunt','piss','shit','damn','nigga','nigger','retard','dickhead','dipshit','ass','asshat','motherfucker','bitchass','bitch ass','Fuck','Pussy','Bitch','Hoe','Whore','Slut','Cunt','Piss','Shit','Damn','Nigga','Nigger','Retard','Dickhead','Dipshit','Ass','Asshat','Motherfucker','Bitchass','bitch ass'
 ]
@@ -376,13 +423,13 @@ if(message.member.roles.cache.has(whitelist)) return;
             database.getWarnings(message.guild.id, userid)
             .then(warnings => {
                 if (warnings.length == 0) return message.channel.send("", { embed: {
-                    color: `#ff3636`,
+                    color: `RANDOM`,
                     description: "User has no warnings."
                 }});
                 var array_chunks = Array(Math.ceil(warnings.length / 15)).fill().map((_, index) => index * 15).map(begin => warnings.slice(begin, begin + 15));
                 if (page > -1 && array_chunks.length > page) {
                     message.channel.send({ embed: {
-                        color: `#ff3636`,
+                        color: `RANDOM`,
                         description:` ** Warnings for <@${userid.id}>  (${userid.id})**\n\n Total warnings:  ${warnings.length} | Page: ${page + 1}/${array_chunks.length}\n\n${array_chunks[page].map((warning, index) => `${index + 1})‎ Timestamp: ${warning.d}‎ | Moderator: <@${warning.issuer}>\n *Reason for the warning: ${warning.reason}*`).join("\n\n")}`
                     }})
                 }
@@ -1455,8 +1502,8 @@ if(command === "shop") {
             message.channel.send(new Ongaku.MessageEmbed()
     .setColor("RANDOM")
        .setAuthor(client.user.username, client.user.displayAvatarURL())
-       .setTitle(`Welcome to ${message.guild.name}'s Shop`)
-      .setDescription(`${client.user.name}'s Global Shop Items\n\n**Weapons and Ammo**\n---------------\n| Pistol: \`240$\`\n| Ak-14: \`340\`\n| M14: \`500$\`\n| RPG: \`2390$\`\n| ABAT Catapillar 149: \`52003$\`\n---------------\nPistol rounds: \`30$\`\nAk rounds: \`56$\`\nM14 rounds: \`120$\`\nRPG rockets: \`300$\`\nABAT rounds: \`4000$\`\n\n**Pets and Food**\n---------------\nKaiou: \`130$\`\nBonzo: \`330$\`\nNeiphi: \`100$\`\nBowo:\`1600$\`\nChaoi: \`1020\`\n---------------\nSeeds: \`10$\`\nMeat: \`30$\`\nBait: \`20$\`\nRice: \`60$\`\nGM carrots: \`100$\`\n\n**Badges**\n---------------\nBronze I: \`10000$\`\nBronze II: \`15000$\`\nBronze III: \`20000$\``)
+       .setTitle(`Welcome to ${client.user.username}'s Shop`)
+      .setDescription(`${client.user.username}'s Global Shop Items\n\n**Weapons and Ammo**\n---------------\n| Pistol: \`240$\`\n| Ak-14: \`340\`\n| M14: \`500$\`\n| RPG: \`2390$\`\n| ABAT Catapillar 149: \`52003$\`\n---------------\nPistol rounds: \`30$\`\nAk rounds: \`56$\`\nM14 rounds: \`120$\`\nRPG rockets: \`300$\`\nABAT rounds: \`4000$\`\n\n**Pets and Food**\n---------------\nKaiou: \`130$\`\nBonzo: \`330$\`\nNeiphi: \`100$\`\nBowo:\`1600$\`\nChaoi: \`1020\`\n---------------\nSeeds: \`10$\`\nMeat: \`30$\`\nBait: \`20$\`\nRice: \`60$\`\nGM carrots: \`100$\`\n\n**Badges**\n---------------\nBronze I: \`10000$\`\nBronze II: \`15000$\`\nBronze III: \`20000$\``)
       )
             } else {
             message.channel.send(embed)
@@ -1917,54 +1964,129 @@ if(command === "shop") {
         //black jack commands
         if(command === "userinfo") {
 
-        if(args.length > 1) return message.channel.send('Only mention one user!');
-
-    //check if there is 1 argument
-    if(args[0]){
-      //get the first user mentioned
-      let member = message.mentions.members.first() || message.author;
-
-      //if the member exists create an embed with info about that user and send it to the channel
-      if(member) {
-        let embed = new Ongaku.MessageEmbed()
-          .setColor("RANDOM")
-          .setTitle("User Info")
-          .setThumbnail(member.user.displayAvatarURL())
-          .setAuthor(`${member.user.tag} (${member.id})`, member.user.displayAvatarURL())
-          .addField("**Username:**", `${member.user.username}`)
-          .addField("**Discriminator:**", `${member.user.discriminator}`)
-          .addField("**ID:**", `${member.user.id}`)
-          .addField("**Status:**", `${member.user.presence.status}`)
-          .addField("**Joined On:**", `${member.joinedAt.toLocaleString()}`)
-          .addField("**Created On:**", `${member.user.createdAt.toLocaleString()}`)
-          .addField("**All Roles:**", `${member.roles.cache.map(role => role.toString()).join(' ')}`)
-          .setFooter(`© ${message.guild.me.displayName}`, client.user.displayAvatarURL());
-
-        message.channel.send(embed);
-      } else {
-          message.channel.send(`Could not find that member`); //send a message to the channel if the user doesn't exist
-      }
+        const status = {
+    online: "Online",
+    idle: "Idle",
+    dnd: "Do Not Disturb",
+    offline: "Offline/Invisible"
+      };
+       var permissions = [];
+    var acknowledgements = 'None';
+   
+    const member = message.mentions.members.first() || message.guild.members.cache.get(args[0]) || message.member;
+    const randomColor = "#000000".replace(/0/g, function () { return (~~(Math.random() * 16)).toString(16); }); 
+    
+    if(message.member.hasPermission("KICK_MEMBERS")){
+        permissions.push("Kick Members");
     }
+    
+    if(message.member.hasPermission("BAN_MEMBERS")){
+        permissions.push("Ban Members");
+    }
+    
+    if(message.member.hasPermission("ADMINISTRATOR")){
+        permissions.push("Administrator");
+    }
+
+    if(message.member.hasPermission("MANAGE_MESSAGES")){
+        permissions.push("Manage Messages");
+    }
+    
+    if(message.member.hasPermission("MANAGE_CHANNELS")){
+        permissions.push("Manage Channels");
+    }
+    
+    if(message.member.hasPermission("MENTION_EVERYONE")){
+        permissions.push("Mention Everyone");
+    }
+
+    if(message.member.hasPermission("MANAGE_NICKNAMES")){
+        permissions.push("Manage Nicknames");
+    }
+
+    if(message.member.hasPermission("MANAGE_ROLES")){
+        permissions.push("Manage Roles");
+    }
+
+    if(message.member.hasPermission("MANAGE_WEBHOOKS")){
+        permissions.push("Manage Webhooks");
+    }
+
+    if(message.member.hasPermission("MANAGE_EMOJIS")){
+        permissions.push("Manage Emojis");
+    }
+
+    if(permissions.length == 0){
+        permissions.push("No Key Permissions Found");
+    }
+
+    if(member.user.id == message.guild.ownerID){
+        acknowledgements = 'Server Owner';
+    }
+
+    const embed = new Ongaku.MessageEmbed()
+        .setDescription(`<@${member.user.id}>`)
+        .setAuthor(`${member.user.tag}`, member.user.displayAvatarURL)
+        .setColor(randomColor)
+        .setFooter(`ID: ${message.author.id}`)
+        .setThumbnail(member.user.displayAvatarURL)
+        .setTimestamp()
+        .addField("Status",`${status[member.user.presence.status]}`, true)
+        .addField('Joined at: ',`${moment(member.joinedAt).format("dddd, MMMM Do YYYY, HH:mm:ss")}`)
+        .addField("Created at: ",`${moment(message.author.createdAt).format("dddd, MMMM Do YYYY, HH:mm:ss")}`, true)
+        .addField("Permissions: ", `${permissions.join(', ')}`)
+        .addField(`Roles [${member.roles.cache.filter(r => r.id !== message.guild.id).map(roles => `\`${roles.name}\``).length}]`,`${member.roles.cache.filter(r => r.id !== message.guild.id).map(roles => `<@&${roles.id }>`).join(" **|** ") || "No Roles"}`, true)
+        .addField("Acknowledgements: ", `${acknowledgements}`)
+          .addField("**Status:**", `${member.user.presence.status}`);
+        
+    message.channel.send({embed});
         }
 
     if(command === "serverinfo") {
-         let embed = new Ongaku.MessageEmbed()
-      .setColor("RANDOM")
-      .setTitle("Server Info")
-      .setThumbnail(message.guild.iconURL())
-      .setAuthor(`${message.guild.name}`, message.guild.iconURL())
-      .addField("**Guild Owner:**", `${message.guild.owner}`)
-      .addField("**Member Count:**", `${message.guild.memberCount}`)
-      .addField("**Total Real Members**", message.guild.members.cache.filter(member => !member.user.bot).size)
-      .addField("**Total Bots**", message.guild.members.cache.filter(member => member.user.bot).size)
-      .addField("**Total Channels**", message.guild.channels.cache.size)
-      .addField("**Total Text Channels**", message.guild.channels.cache.filter(ch => ch.type === 'text').size)
-      .addField("**Total Voice Channels**", message.guild.channels.cache.filter(ch => ch.type === 'voice').size)
-      .addField("**Created On**", message.guild.createdAt.toLocaleString())
-      .addField("**All roles**", `${message.guild.roles.cache.map(role => role.toString()).join(' ')}`)
-      .setFooter(`© ${message.guild.me.displayName}`, client.user.displayAvatarURL());
+         function checkBots(guild) {
+        let botCount = 0;
+        guild.members.cache.forEach(member => {
+            if(member.user.bot) botCount++;
+        });
+        return botCount;
+    }
     
-    message.channel.send(embed);
+    function checkMembers(guild) {
+        let memberCount = 0;
+        guild.members.cache.forEach(member => {
+            if(!member.user.bot) memberCount++;
+        });
+        return memberCount;
+    }
+
+    function checkOnlineUsers(guild) {
+        let onlineCount = 0;
+        guild.members.cache.forEach(member => {
+            if(member.user.presence.status === "online")
+                onlineCount++; 
+        });
+        return onlineCount;
+    }
+
+    let sicon = message.guild.iconURL;
+    let serverembed = new Ongaku.MessageEmbed()
+        .setAuthor(`${message.guild.name} - Informations`, message.guild.iconURL)
+        .setColor("RANDOM")
+        .setThumbnail(message.guild.iconURL())
+        .addField('Server owner', message.guild.owner, true)
+        .addField('Server region', message.guild.region, true)
+        .addField("Server Name", message.guild.name)
+        .addField('Verification level', message.guild.verificationLevel, true)
+        .addField('Channel count', message.guild.channels.cache.size, true)
+        .addField('Total member count', message.guild.memberCount)
+        .addField('Humans', checkMembers(message.guild), true)
+        .addField('Bots', checkBots(message.guild), true)
+        .addField('Online', checkOnlineUsers(message.guild))
+      .addField("**All roles**", `${message.guild.roles.cache.map(role => role.toString()).join(' ')}`)
+        .setFooter('Guild created at:')
+        .setTimestamp(message.guild.createdAt);
+
+    return message.channel.send(serverembed);
     }
 
     //end of info commmands
@@ -1993,6 +2115,135 @@ if(command === "shop") {
 		})
 		.catch(console.error);
     }
+
+    //end of meme command
+    if (command === "avatar") {
+
+    let member = message.mentions.users.first() || message.author;
+    message.channel.send(new Ongaku.MessageEmbed()
+    .setColor("RANDOM")
+    .setTitle(`${member.username}'s' Avatar`)
+      .setImage(member.displayAvatarURL({ dynamic: true, size: 512 })))
+  }
+  //end of avatar commands
+
+  if(command === "mailconf") {
+       let prop = args[0];
+       let value = args[1];
+    // Example: 
+    // prop: "prefix"
+    // value: ["+"]
+    // (yes it's an array, we join it further down!)
+
+    // We can check that the key exists to avoid having multiple useless, 
+    // unused keys in the config:
+    if(!client.modmail.has(message.guild.id, prop)) {
+      return message.reply("This key is not in the configuration.");
+    }
+
+    // Now we can finally change the value. Here we only have strings for values 
+    // so we won't bother trying to make sure it's the right type and such. 
+    client.modmail.set(message.guild.id, value, prop);
+
+    // We can confirm everything's done to the client.
+    message.channel.send(`Guild configuration name:  **${prop}** has been changed to: **\`${value}\`**`);
+  }
+
+  if(command === "prefixconf") {
+       let prop = args[0];
+       let value = args[1];
+    // Example: 
+    // prop: "prefix"
+    // value: ["+"]
+    // (yes it's an array, we join it further down!)
+
+    // We can check that the key exists to avoid having multiple useless, 
+    // unused keys in the config:
+    if(!client.prefix.has(message.guild.id, prop)) {
+      return message.reply("This key is not in the configuration.");
+    }
+
+    // Now we can finally change the value. Here we only have strings for values 
+    // so we won't bother trying to make sure it's the right type and such. 
+    client.prefix.set(message.guild.id, value, prop);
+
+    // We can confirm everything's done to the client.
+    message.channel.send(`Guild Config for: **${prop}** has been changed to: **\`${value}\`**`);
+  }
+
+  // end of configs
+
+  if(command === "close") {
+
+      if(message.channel.parentID == message.guild.channels.cache.find((x) => x.name == "Ongaku-ModMail").id) {
+            
+            const person = message.guild.members.cache.get(message.channel.name)
+
+            if(!person) {
+                return message.channel.send("I am Unable to close the channel and this error is coming because probaly channel name is changed.")
+            }
+
+            await message.channel.delete()
+  }
+    }
+  if(command === "open") {
+
+       const category = message.guild.channels.cache.find((x) => x.name == "Ongaku-ModMail")
+       if(!category) {
+           return message.channel.send('please create a category called \`Ongaku-ModMail\`');
+       }
+
+          if(!mail.support) {
+              return message.channel.send("Moderation system is not setuped in this server, use " + prefix + "mailconf")
+          }
+
+
+          let target = message.author;
+          const everyone = "@everyone"
+
+          const channel = await message.guild.channels.create(message.author.id, {
+              type: "text",
+            parent: category.id,
+            topic: "Mail is Direct Opened by **" + target.username + "** to make contact with **server staff**."
+          });
+
+          let omfgg = new Ongaku.MessageEmbed()
+          .setColor("RANDOM")
+          .setDescription(mail.message)
+
+          channel.send(`<@&${mail.support}>`, omfgg)
+
+
+          let uembed = new Ongaku.MessageEmbed()
+          .setAuthor("Direct mail contacted")
+          .setColor("RANDOM")
+          .setDescription("You have contacted support in** " + message.guild.name + "**, they have been notified and will contact you back shortly.");
+          
+          const person = message.channel.guild.members.cache.find((x) => x.id == channel.name)
+          person.send(uembed);
+
+          let newEmbed = new Ongaku.MessageEmbed()
+          .setDescription("Opened The Mail: <#" + channel + ">")
+          .setColor("RANDOM");
+
+           message.channel.send(newEmbed);
+  }
+
+
+  
+
+  // end of all commands (adding more in the future)
+
+  if(command === "help") {
+
+      let embed = new Ongaku.MessageEmbed()
+      .setAuthor(message.author.username, message.author.displayAvatarURL())
+      .setDescription(`\`Help command interface\``)
+
+      message.channel.send(embed)
+     
+  }
+
 
 
 }); 
