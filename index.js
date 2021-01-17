@@ -35,8 +35,35 @@ const manager = new StarboardsManager(client, {
 client.starboardsManager = manager;
 
 
+const Enmap = require('enmap');
 
 
+client.modmail = new Enmap({
+  name: "modmail",
+  fetchAll: false,
+  autoFetch: true,
+  cloneLevel: 'deep'
+});
+// Just setting up a default configuration object here, to have something to insert.
+
+let role = db.get('support')
+if(!role) role = 'None';
+
+const settings = {
+  support: `${role}`,
+  message: 'Hello and welcome to your support ticket\n\n you can get started by asking your question so when they arrive they can help you ASAP!'
+}
+
+
+client.prefix = new Enmap({
+  name: "prefixes",
+  fetchAll: false,
+  autoFetch: true,
+  cloneLevel: 'deep'
+});
+const configs = {
+  prefix: "o!"
+}
 
 //npm above
 
@@ -147,11 +174,39 @@ const TIME = 25000;
 const DIFF = 9500;
 
 
+client.on("channelDelete", (channel) => {
+    
+    if(channel.parentID == channel.guild.channels.cache.find((x) => x.name == "Ongaku-ModMail").id) {
+        const person = channel.guild.members.cache.find((x) => x.id == channel.name)
+
+        if(!person) return;
+
+        let yembed = new Ongaku.MessageEmbed()
+        .setAuthor("MAIL DELETED", client.user.displayAvatarURL())
+        .setColor('RANDOM')
+        .setThumbnail(client.user.displayAvatarURL())
+        .setDescription("Your mail is deleted by moderator and if you have any problem with that than you can open mail again by sending message here.")
+    return person.send(yembed)
+    
+    }
+
+
+});
+
+client.on("guildDelete", guild => {
+  // When the bot leaves or is kicked, delete settings to prevent stale entries.
+  client.modmail.delete(guild.id);
+  client.prefix.delete(guild.id);
+});
 
 
 
 
 client.on("message", async message => {
+    
+
+const mail = client.modmail.ensure(message.guild.id, settings)
+const con = client.prefix.ensure(message.guild.id, configs)
 
     const Modlog = message.guild.channels.cache
     .get("ongaku-logs")
@@ -159,7 +214,7 @@ client.on("message", async message => {
     if(message.author.bot) return;
 
 const data = {
-    prefix: "o!"
+    prefix: con.prefix
 }
 
 let prefix = data.prefix
@@ -1995,6 +2050,109 @@ if(command === "shop") {
     .setTitle(`${member.username}'s' Avatar`)
       .setImage(member.displayAvatarURL({ dynamic: true, size: 512 })))
   }
+  //end of avatar commands
+
+  if(command === "mailconf") {
+       let prop = args[0];
+       let value = args[1];
+    // Example: 
+    // prop: "prefix"
+    // value: ["+"]
+    // (yes it's an array, we join it further down!)
+
+    // We can check that the key exists to avoid having multiple useless, 
+    // unused keys in the config:
+    if(!client.modmail.has(message.guild.id, prop)) {
+      return message.reply("This key is not in the configuration.");
+    }
+
+    // Now we can finally change the value. Here we only have strings for values 
+    // so we won't bother trying to make sure it's the right type and such. 
+    client.modmail.set(message.guild.id, value, prop);
+
+    // We can confirm everything's done to the client.
+    message.channel.send(`Guild configuration name:  **${prop}** has been changed to: **\`${value}\`**`);
+  }
+
+  if(command === "prefixconf") {
+       let prop = args[0];
+       let value = args[1];
+    // Example: 
+    // prop: "prefix"
+    // value: ["+"]
+    // (yes it's an array, we join it further down!)
+
+    // We can check that the key exists to avoid having multiple useless, 
+    // unused keys in the config:
+    if(!client.prefix.has(message.guild.id, prop)) {
+      return message.reply("This key is not in the configuration.");
+    }
+
+    // Now we can finally change the value. Here we only have strings for values 
+    // so we won't bother trying to make sure it's the right type and such. 
+    client.prefix.set(message.guild.id, value, prop);
+
+    // We can confirm everything's done to the client.
+    message.channel.send(`Guild Config for: **${prop}** has been changed to: **\`${value}\`**`);
+  }
+
+  // end of configs
+
+  if(command === "close") {
+
+      if(message.channel.parentID == message.guild.channels.cache.find((x) => x.name == "Ongaku-ModMail").id) {
+            
+            const person = message.guild.members.cache.get(message.channel.name)
+
+            if(!person) {
+                return message.channel.send("I am Unable to close the channel and this error is coming because probaly channel name is changed.")
+            }
+
+            await message.channel.delete()
+  }
+    }
+  if(command === "open") {
+
+       const category = message.guild.channels.cache.find((x) => x.name == "Ongaku-ModMail")
+       if(!category) {
+           return message.channel.send('please create a category called \`Ongaku-ModMail\`');
+       }
+
+          if(!mail.support) {
+              return message.channel.send("Moderation system is not setuped in this server, use " + prefix + "mailconf")
+          }
+
+
+          let target = message.author;
+          const everyone = "@everyone"
+
+          const channel = await message.guild.channels.create(message.author.id, {
+              type: "text",
+            parent: category.id,
+            topic: "Mail is Direct Opened by **" + target.username + "** to make contact with **server staff**."
+          });
+
+          let omfgg = new Ongaku.MessageEmbed()
+          .setColor("RANDOM")
+          .setDescription(mail.message)
+
+          channel.send(`<@&${mail.support}>`, omfgg)
+
+
+          let uembed = new Ongaku.MessageEmbed()
+          .setAuthor("Direct mail contacted")
+          .setColor("RANDOM")
+          .setDescription("You have contacted support in** " + message.guild.name + "**, they have been notified and will contact you back shortly.");
+          
+          const person = message.channel.guild.members.cache.find((x) => x.id == channel.name)
+          person.send(uembed);
+
+          let newEmbed = new Ongaku.MessageEmbed()
+          .setDescription("Opened The Mail: <#" + channel + ">")
+          .setColor("RANDOM");
+
+           message.channel.send(newEmbed);
+  }
 
 
   
@@ -2010,6 +2168,7 @@ if(command === "shop") {
       message.channel.send(embed)
      
   }
+
 
 
 }); 
