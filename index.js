@@ -62,7 +62,8 @@ client.prefix = new Enmap({
   cloneLevel: 'deep'
 });
 const configs = {
-  prefix: "o!"
+  prefix: "o!",
+  urprefix: "o!"
 }
 
 //npm above
@@ -214,7 +215,8 @@ const con = client.prefix.ensure(message.guild.id, configs)
     if(message.author.bot) return;
 
 const data = {
-    prefix: con.prefix
+    prefix: con.prefix,
+    uspre: con.urprefix
 }
 
 let prefix = data.prefix
@@ -263,9 +265,9 @@ if(message.member.roles.cache.has(whitelist)) return;
      } 
 }
 
-  if (message.content.indexOf(prefix) !== 0) return;
+  if (message.content.indexOf([prefix, data.urpre]) !== 0) return;
 
-  const args = message.content.slice(prefix.length).trim().split(' ');
+  const args = message.content.slice([ prefix, data.urpre ].length).trim().split(' ');
   const command = args.shift().toLowerCase();
 
   if (command === "ping") {
@@ -2150,7 +2152,7 @@ if(command === "shop") {
   }
 
   if(command === "prefixconf") {
-       let prop = args[0];
+       let prop = 'prefix';
        let value = args[1];
     // Example: 
     // prop: "prefix"
@@ -2169,6 +2171,28 @@ if(command === "shop") {
 
     // We can confirm everything's done to the client.
     message.channel.send(`Guild Config for: **${prop}** has been changed to: **\`${value}\`**`);
+  }
+
+  if(command === "userconf") {
+       let prop = 'urprefix';
+       let value = args[1];
+    // Example: 
+    // prop: "prefix"
+    // value: ["+"]
+    // (yes it's an array, we join it further down!)
+
+    // We can check that the key exists to avoid having multiple useless, 
+    // unused keys in the config:
+    if(!client.prefix.has(message.author.id, prop)) {
+      return message.reply("This key is not in the configuration.");
+    }
+
+    // Now we can finally change the value. Here we only have strings for values 
+    // so we won't bother trying to make sure it's the right type and such. 
+    client.prefix.set(message.author.id, value, prop);
+
+    // We can confirm everything's done to the client.
+    message.channel.send(`User Config for: **${prop}** has been changed to: **\`${value}\`**`);
   }
 
   // end of configs
@@ -2235,15 +2259,7 @@ if(command === "shop") {
   // end of all commands (adding more in the future)
 
   if(command === "help") {
-
-      let embed = new Ongaku.MessageEmbed()
-      .setAuthor(message.author.username, message.author.displayAvatarURL())
-      .setDescription(`\`Help command interface\``)
-
-      message.channel.send(embed)
-     
   }
-
 
 
 }); 
