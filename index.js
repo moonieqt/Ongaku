@@ -153,9 +153,8 @@ client.on('messageDelete', async (message) => {
         }
     }, 5000);
 
-client.user.setActivity("over you | o!", {
-  type: "WATCHING",
-  status: "dnd"
+client.user.setActivity("to o!help", {
+  type: "LISTENING"
 });
 
 
@@ -164,7 +163,7 @@ client.user.setActivity("over you | o!", {
 
 
 
-// bot categorys: [ music, mod, fun, eco ]
+// bot categorys: [ music, mod, fun, eco, ticket, configs, image manipulation, roleplay ]
 
 
 const usersMap = new Map();
@@ -208,6 +207,7 @@ client.on("message", async message => {
 const mail = client.modmail.ensure(message.guild.id, settings)
 const con = client.prefix.ensure(message.guild.id, configs)
 
+
     const Modlog = message.guild.channels.cache
     .get("ongaku-logs")
     
@@ -217,7 +217,6 @@ const data = {
     prefix: con.prefix
 }
 
-let prefix = data.prefix
 
 
     var nonos = [
@@ -263,10 +262,12 @@ if(message.member.roles.cache.has(whitelist)) return;
      } 
 }
 
+let prefix = data.prefix
   if (message.content.indexOf(prefix) !== 0) return;
 
   const args = message.content.slice(prefix.length).trim().split(' ');
   const command = args.shift().toLowerCase();
+  
 
   if (command === "ping") {
 
@@ -319,8 +320,9 @@ if(message.member.roles.cache.has(whitelist)) return;
       );
     }
 
-        if (message.content.startsWith([`3d`, `bassboost`, `echo`, `karaoke`, `nightcore`, `vaporwave`])) {
-        let filter = distube.setFilter(message);
+            if ([`3d`, `bassboost`, `echo`, `karaoke`, `nightcore`, `vaporwave`].some(content => message.content.startsWith(prefix + content))) {          
+                let contend = [`3d`, `bassboost`, `echo`, `karaoke`, `nightcore`, `vaporwave`].some(content)
+        let filter = distube.setFilter(contend);
         message.channel.send(new Ongaku.MessageEmbed()
     .setColor("RANDOM")
        .setAuthor(client.user.username, client.user.displayAvatarURL())
@@ -806,7 +808,7 @@ result
 
     const body = await fetch("https://hastebin.com/documents", {
       method: "post",
-      body: evalOutput.join("\n")
+      body: evalOutput.join()
     })
       .then(async (res) => await res.json());
 
@@ -2150,8 +2152,8 @@ if(command === "shop") {
   }
 
   if(command === "prefixconf") {
-       let prop = args[0];
-       let value = args[1];
+       let prop = 'prefix';
+       let value = args.join(" ")
     // Example: 
     // prop: "prefix"
     // value: ["+"]
@@ -2228,22 +2230,33 @@ if(command === "shop") {
 
            message.channel.send(newEmbed);
   }
-
-
+  if (['cc', 'ok'].some(content => message.content.startsWith(prefix + content))) {
+      message.channel.send('works boysssss')
+  }
   
 
   // end of all commands (adding more in the future)
 
   if(command === "help") {
+      // bot categorys: [ music, mod, fun, eco, ticket, configs, image manipulation, roleplay ]
 
-      let embed = new Ongaku.MessageEmbed()
-      .setAuthor(message.author.username, message.author.displayAvatarURL())
-      .setDescription(`\`Help command interface\``)
+      const embed = new Ongaku.MessageEmbed()
+      .setColor("RANDOM")
+      .setThumbnail(client.user.displayAvatarURL())
+      .setDescription(`All Command Categorys`)
+      .addField("Music Category", `\`This page displays music commands\``, true)
+      .addField("Moderation Category", `\`This page displays moderation commands\``, true)
+      .addField("Fun Category", `\`This page displays fun/misc commands\``, true)
+      .addField("Economy Category", `\`This page displays economy commands\``, true)
+      .addField("Ticket Category", `\`This page displays ticket commands\``, true)
+      .addField("Config Category", `\`This page displays confirmation commands\``, true)
+      .addField("Image Manipulation Category", `\`This page displays image manipulation commands\``, true)
+      .addField("Roleplay Category", `\`This page displays roleplay commands\``, true)
+      .setFooter(message.guild.name)
+      .setTimestamp();
 
-      message.channel.send(embed)
-     
+      const a = await message.channel.send(embed)
   }
-
 
 
 }); 
