@@ -13,9 +13,10 @@ require("moment-duration-format");
 const cooldowns = new Map();
 const humanizeDuration = require('humanize-duration');
 const superagent = require('superagent');
-
+const { Swiftcord } = require("swiftcord");
+const cord = new Swiftcord();
 const got = require('got');
-
+const why = 'why not lmao'
 require('http').createServer((req, res) => res.end()).listen(5030)
 
 
@@ -160,8 +161,6 @@ client.user.setActivity("to o!help", {
 
   console.log(`Name is: ${client.user.username}`)
 });
-
-
 
 // bot categorys: [ music, mod, fun, eco, ticket, configs, image manipulation, roleplay ]
 
@@ -704,7 +703,8 @@ const context = {
   database,
   db,
   data,
-  main
+  main,
+  why
 };
 
 const scriptOptions = {
@@ -1016,19 +1016,29 @@ if(command === "snipe") {
     
     const embed = new Ongaku.MessageEmbed() 
     .setColor("RANDOM") //you can set it as you went
-    .setDescription(`${message.author} etted ${message.mentions.users.first()}`) //lets reply as 
+    .setDescription(`${message.author} petted ${message.mentions.users.first()}`) //lets reply as 
     .setImage(body.url) // lets showing pat (GIF)
     message.channel.send({embed})
   }
   if(command === "poke") {
       if (!message.mentions.users.first()) return message.reply(":x: | i see anything is wrong ,You need to mention someone to pat them"); //lets reply as this if you didnt mention anyone
-    if (message.mentions.users.first().id === "782929865636446229") return message.channel.send('<a:kith:790731483576139777>'); //lets reply as this if you mentions
     const { body } = await superagent
     .get("https://nekos.life/api/poke"); //lets check wut we need
     
     const embed = new Ongaku.MessageEmbed() // RichEmbed is renamed as MessageEmbed onec discordjs is updated to newest version
     .setColor("RANDOM") 
     .setDescription(`${message.author} wants ${message.mentions.users.first()} attention`) // lets reply as a funny reply
+    .setImage(body.url)
+    message.channel.send({embed})
+  }
+  if(command === "punch") {
+      if (!message.mentions.users.first()) return message.reply(":x: | i see anything is wrong ,You need to mention someone to pat them"); //lets reply as this if you didnt mention anyone //lets reply as this if you mentions
+    const { body } = await superagent
+    .get("https://neko-love.xyz/api/v1/punch"); //lets check wut we need
+    
+    const embed = new Ongaku.MessageEmbed() // RichEmbed is renamed as MessageEmbed onec discordjs is updated to newest version
+    .setColor("RANDOM") 
+    .setDescription(`${message.author} punches ${message.mentions.users.first()}`) // lets reply as a funny reply
     .setImage(body.url)
     message.channel.send({embed})
   }
@@ -1353,24 +1363,6 @@ if (cooldown) {
         .setAuthor(`${message.guild.name}`, message.guild.iconURL({ dynamic: true }))
         .setColor("RANDOM")
         .addField(`Money Leaderboard`, finalLb, false)
-        .setFooter(message.author.tag, message.author.displayAvatarURL())
-    .setTimestamp()
-        message.channel.send(embed);
-}
-if (command === "r-lb") {
-    
-    let level = db.all().filter(data => data.ID.startsWith(`level`)).sort((a, b) => b.data - a.data)
-        level.length = 10;
-        let finalLb = "";
-        for (var i in level) {
-          finalLb += `**${level.indexOf(level[i])+1}.**     <@${level[i].ID.slice(25)}> - \`Level is: ${level[i].data}\`\n`;
-        }
-        if(!finalLb) finalLb = 'nobody to display on the leaderboard';
-        
-        const embed = new Ongaku.MessageEmbed()
-        .setAuthor(`${message.guild.name}`, message.guild.iconURL({ dynamic: true }))
-        .setColor("RANDOM")
-        .addField(`Rank Leaderboard`, finalLb, false)
         .setFooter(message.author.tag, message.author.displayAvatarURL())
     .setTimestamp()
         message.channel.send(embed);
@@ -2091,6 +2083,54 @@ if(command === "shop") {
     return message.channel.send(serverembed);
     }
 
+    if(command === "spotify") {
+        if(args[0] === "--card") {
+            let spotify = message.member.presence.activities.filter(x => x.name == 'Spotify' && x.type == 'LISTENING')[0];
+            if(!spotify) return message.reply('user isnt listening to spotify')
+ 
+        let trackIMG = `https://i.scdn.co/image/${spotify.assets.largeImage.slice(8)}`;
+        let trackName = spotify.details;
+        let trackAuthor = spotify.state;
+        let trackAlbum = spotify.assets.largeText;
+ 
+        const data = await cord.Spotify({
+            title: trackName,
+            artist: trackAuthor,
+            album: trackAlbum,
+            image: trackIMG,
+            start: spotify.timestamps.start,
+            end: spotify.timestamps.end
+        });
+        const img = cord.write(data, "spotify.png");
+ 
+        return message.channel.send(img);
+        } else {
+            let user = message.mentions.users.first() || message.author;
+            let spotify = message.member.presence.activities.filter(x => x.name == 'Spotify' && x.type == 'LISTENING')[0];
+        if(spotify) {
+
+            let trackIMG = `https://i.scdn.co/image/${spotify.assets.largeImage.slice(8)}`;
+            let trackURL = `https://open.spotify.com/track/${spotify.syncID}`;
+            let trackName = spotify.details;
+            let trackAuthor = spotify.state;
+            let trackAlbum = spotify.assets.largeText;
+
+            const embed = new Ongaku.MessageEmbed()
+                .setColor("RANDOM")
+                .setAuthor(client.user.username, client.user.displayAvatarURL())
+                .setThumbnail(trackIMG)
+                .addField('Song Name', trackName)
+                .addField('Album', trackAlbum)
+                .addField('Author', trackAuthor)
+                .addField('Listen to Track', `${trackURL}`)
+                .setFooter(message.member.displayName, message.author.displayAvatarURL())
+                .setTimestamp()
+
+            message.channel.send(embed);
+        }
+    }
+}
+
     //end of info commmands
 
     if(command === "meme") {
@@ -2240,23 +2280,88 @@ if(command === "shop") {
   if(command === "help") {
       // bot categorys: [ music, mod, fun, eco, ticket, configs, image manipulation, roleplay ]
 
+
+      if(args[0] === "1") {
+             let embed = new Ongaku.MessageEmbed()
+    .setColor("RANDOM")
+      .setThumbnail(client.user.displayAvatarURL())
+      .setDescription(`**Music Commands**:\n> |  *play* : plays a song [url/name]\n> |  *loop* : cycles threw loops\n> |  *stop* : disconnects the bot from vc\n> |  *skip* : skips the song playing\n> | *queue* : get the full queue\n> |  *autoplay* : turns autoplaying [on/off] [on by default]\n> |  *volume* : changes the bots music volume\n> |  *pause* : pauses the music\n> |  *resume* : reusmes the music\n\n*Tags for music filters*\n**3d | bassboost | echo | karaoke | nightcore | vaporwave**`)
+      .setFooter(message.guild.name)
+      .setTimestamp();
+      
+
+             message.channel.send(embed);
+             } 
+             else if(args[0] === "2") {
+          let embed = new Ongaku.MessageEmbed()
+         .setColor('RANDOM')
+      .setThumbnail(client.user.displayAvatarURL())
+        .setDescription(`**Moderator Commands**:\n> | *ban* : bans member from your server\n> |  *kick* : kicks member from your server\n> |  *warn* : warns member\n> |  *unwarn* : unwarn member\n> |  *warnings* : get all warnings for member\n> |  *purge* : purges messages in a text channel\n> |  *addrole* : adds role to mentioned user\n> |  *removerole* : removes role from mentioned user\n> |  *unban* : unbans a banned member\n> |  *mute* : mutes member for time [or perm]\n> |  *unmute* : unmutes muted member`)
+        .setFooter(message.guild.name)
+      .setTimestamp();
+
+             message.channel.send(embed)
+             }
+             else if(args[0] === "4") {
+          let embed = new Ongaku.MessageEmbed()
+         .setColor('RANDOM')
+      .setThumbnail(client.user.displayAvatarURL())
+        .setDescription(`**Economy Commands**:\n> |  *bal* : displays your balance\n> |  *work* : work at a career\n> |  *lb* : get the leaderboard\n> |  *gamble* : try gambling some money\n> |  *deposit* : keep your money safe in the bank\n> |  *withdraw* : take some money out of your savings\n> |  *pay* : give someone your money\n\n**Item commands**\n> |  *create-item* : creates an item\n> |  *delete-item* : deletes an item\n> |  *item-info* : get info of an created item\n\n**Shop commands**\n> |  *shop --latest* : get the latest item in the shop\n> |  *shop --item* : see if a item is in stock\n> |  *shop --global* : get the default shop list\n\n**Maketing commands**\n> |  *buy* : buy an item from the shop\n> |  *petshop* : buy a pet from the pet shop!\n> |  *market* : buy weapons from the towns market\n\n**Rank Commmands**\n> |  *rank* : get your first rank\n> |  *upgrade --rank* : upgrade your rank\n\n\n**More commands coming in the future!**`)
+        .setFooter(message.guild.name)
+      .setTimestamp();
+
+             message.channel.send(embed)
+          } 
+          else if(args[0] === "8") {
+                 let embed = new Ongaku.MessageEmbed()
+         .setColor('RANDOM')
+      .setThumbnail(client.user.displayAvatarURL())
+        .setDescription(`**Roleplay Commands**:\n> | *hug* : hugs mentions user\n> |  *kiss* :  kisses mentioned user\n> |  *slap* : mentioned user\n> |  *poke* : pokes mentioned user\n> |  *smug* : sends a smug gif\n> |  *pat* : pats the mentioned user\n> |  *cry* : sends a crying gif\n> |  *punch* : punches mentioned user`)
+        .setFooter(message.guild.name)
+      .setTimestamp();
+
+             message.channel.send(embed)
+                 } 
+          else if(args[0] === "6") {
+                 let embed = new Ongaku.MessageEmbed()
+         .setColor('RANDOM')
+      .setThumbnail(client.user.displayAvatarURL())
+        .setDescription(`**Config Commands**:\n> | *guildconf* : configurate your servers modmail [ keys: support, message ]\n> |  *prefixconf* :  configurate your servers prefix [ no key ]`)
+        .setFooter(message.guild.name)
+      .setTimestamp();
+
+             message.channel.send(embed)
+                 } 
+          else if(args[0] === "9") {
+                 let embed = new Ongaku.MessageEmbed()
+         .setColor('RANDOM')
+      .setThumbnail(client.user.displayAvatarURL())
+        .setDescription(`**Information Commands**:\n> | *serverinfo* : get infomation on your server\n> |  *userinfo* :  get infomation on a user\n> |  *spotify* : get information on a current song in the users status [ sub cmd: --card ]`)
+        .setFooter(message.guild.name)
+      .setTimestamp();
+
+             message.channel.send(embed)
+                 }
+                 else {
       const embed = new Ongaku.MessageEmbed()
       .setColor("RANDOM")
       .setThumbnail(client.user.displayAvatarURL())
       .setDescription(`All Command Categorys`)
-      .addField("Music Category", `\`This page displays music commands\``, true)
-      .addField("Moderation Category", `\`This page displays moderation commands\``, true)
-      .addField("Fun Category", `\`This page displays fun/misc commands\``, true)
-      .addField("Economy Category", `\`This page displays economy commands\``, true)
-      .addField("Ticket Category", `\`This page displays ticket commands\``, true)
-      .addField("Config Category", `\`This page displays confirmation commands\``, true)
-      .addField("Image Manipulation Category", `\`This page displays image manipulation commands\``, true)
-      .addField("Roleplay Category", `\`This page displays roleplay commands\``, true)
+      .addField("Music Category [1]", `\`This page displays music commands\``, true)
+      .addField("Moderation Category [2]", `\`This page displays moderation commands\``, true)
+      .addField("Fun Category [3]", `\`This page displays fun/misc commands\``, true)
+      .addField("Economy Category [4]", `\`This page displays economy commands\``, true)
+      .addField("Ticket Category [5]", `\`This page displays ticket commands\``, true)
+      .addField("Config Category [6]", `\`This page displays confirmation commands\``, true)
+      .addField("Image Manipulation Category [7]", `\`This page displays image manipulation commands\``, true)
+      .addField("Roleplay Category [8]", `\`This page displays roleplay commands\``, true)
+      .addField("Information Category [9]", `\`This page displays info commands\``, true)
       .setFooter(message.guild.name)
       .setTimestamp();
 
-      const a = await message.channel.send(embed)
+      message.channel.send(embed)
   }
+    }
 
 
 }); 
