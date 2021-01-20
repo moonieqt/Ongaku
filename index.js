@@ -174,7 +174,7 @@ const DIFF = 9500;
 
 client.on("channelDelete", (channel) => {
     
-    if(channel.parentID == channel.guild.channels.cache.find((x) => x.name == "Ongaku-ModMail").id) {
+    if(channel.parentID == channel.guild.channels.cache.find((x) => x.name == "Ongaku-ModMail")) {
         const person = channel.guild.members.cache.find((x) => x.id == channel.name)
 
         if(!person) return;
