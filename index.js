@@ -16,7 +16,7 @@ const superagent = require('superagent');
 const { Swiftcord } = require("swiftcord");
 const cord = new Swiftcord();
 const got = require('got');
-const why = 'why not lmao'
+
 require('http').createServer((req, res) => res.end()).listen(5030)
 
 
