@@ -17,7 +17,7 @@
     "distube": "^2.8.8",
     "enmap": "^5.8.2",
     "ffmpeg-static": "^4.2.7",
-    "got": "^11.8.1",
+    "got": "^11.8.5",
     "humanize-duration": "^3.25.1",
     "jsoning": "^0.8.15",
     "moment": "^2.29.1",
