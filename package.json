@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@discordjs/opus": "^0.3.3",
+    "@discordjs/opus": "^0.8.0",
     "chalk": "^4.1.0",
     "discord-starboards": "^2.1.4",
     "discord.js": "^12.5.1",
